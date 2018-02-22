@@ -59,6 +59,7 @@ func main() {
 			}
 
 			unknownNumer = utils.GenerateNum(4)
+			usersAttempts = usersAttempts[:0]
 			continue
 		}
 
