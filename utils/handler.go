@@ -35,10 +35,9 @@ func CheckInputNumber(text string, unknownNumber string) string {
 
 	var answer string
 	for i := 0; i < len(text); i++ {
-
 		if text[i] == unknownNumber[i] {
 			answer += "B"
-		} else if strings.Contains(unknownNumber, strconv.Itoa(int(text[i]))) {
+		} else if strings.Contains(unknownNumber, string(text[i])) {
 			answer += "K"
 		} else {
 			answer += "-"

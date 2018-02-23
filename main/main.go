@@ -6,6 +6,7 @@ import (
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"strconv"
+	"strings"
 )
 
 func main() {
@@ -27,11 +28,18 @@ func main() {
 			continue
 		}
 
-		text := update.Message.Text
+		text := strings.TrimSpace(update.Message.Text)
 
-		if !utils.IsNumber(text) || len(text) != 4 {
+		if text == "/start"{
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
+			"Угадайте " + strconv.Itoa(len(unknownNumer)) + "-значное число.")
+		bot.Send(msg)
+		continue
+		}
+
+		if !utils.IsNumber(text) || len(text) != len(unknownNumer) {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-				"Введенный текст должен содержать только 4-значное число. Повторите ввод.")
+				"Введенный текст должен содержать только " + strconv.Itoa(len(unknownNumer)) + "-значное число. Повторите ввод.")
 			bot.Send(msg)
 			continue
 		}
