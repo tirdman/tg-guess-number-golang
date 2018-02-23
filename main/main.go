@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/tirdman/tg-guess-number-golang/config"
+	"github.com/tirdman/tg-guess-number-golang/models"
 	"github.com/tirdman/tg-guess-number-golang/utils"
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
@@ -16,7 +17,7 @@ func main() {
 	}
 
 	unknownNumer := utils.GenerateNum(4)
-	var usersAttempts []int
+	var users []*models.User
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -30,48 +31,54 @@ func main() {
 
 		text := strings.TrimSpace(update.Message.Text)
 
-		if text == "/start"{
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-			"Угадайте " + strconv.Itoa(len(unknownNumer)) + "-значное число.")
-		bot.Send(msg)
-		continue
-		}
-
-		if !utils.IsNumber(text) || len(text) != len(unknownNumer) {
+		if text == "/start" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-				"Введенный текст должен содержать только " + strconv.Itoa(len(unknownNumer)) + "-значное число. Повторите ввод.")
+				"Угадайте "+strconv.Itoa(len(unknownNumer))+"-значное число.")
 			bot.Send(msg)
 			continue
 		}
 
-		usersAttempts = append(usersAttempts, update.Message.From.ID)
-		usersAttempt := utils.GetAttemptsByUser(usersAttempts, update.Message.From.ID)
+		if !utils.IsNumber(text) || len(text) != len(unknownNumer) {
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID,
+				"Введенный текст должен содержать только "+strconv.Itoa(len(unknownNumer))+"-значное число. Повторите ввод.")
+			bot.Send(msg)
+			continue
+		}
+
+		u, err := utils.GetUser(update.Message.From.ID, users)
+		if err != nil {
+			u = &models.User{update.Message.From.ID, 1}
+			users = append(users, u)
+		} else {
+			u.Attempts++
+		}
+
 		answer := utils.CheckInputNumber(text, unknownNumer)
 
 		if answer == "BBBB" {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID,
-				"Поздравляем! Вы угадали число "+text+" с попытки: "+strconv.Itoa(usersAttempt)+". Сгенерировано новое число.")
+				"Поздравляем! Вы угадали число "+text+" с попытки: "+strconv.Itoa(u.Attempts)+". Сгенерировано новое число.")
 			bot.Send(msg)
 
-			allUserInQuest := utils.GetAllUserInCurrentQuest(usersAttempts)
-			for _, v := range allUserInQuest {
-				if v == update.Message.From.ID {
+			for _, v := range users {
+				if v.Id == update.Message.From.ID {
 					continue
 				}
 
-				msg := tgbotapi.NewMessage(int64(v),
+				msg := tgbotapi.NewMessage(int64(v.Id),
 					"Игра завершена. Игрок "+update.Message.From.FirstName+" "+update.Message.From.LastName+
-						" угадал число "+unknownNumer+" c попытки: "+strconv.Itoa(usersAttempt)+". Сгенерировано новое число.")
+						" угадал число "+unknownNumer+" c попытки: "+strconv.Itoa(u.Attempts)+". Сгенерировано новое число.")
 				bot.Send(msg)
 
 			}
 
 			unknownNumer = utils.GenerateNum(4)
-			usersAttempts = usersAttempts[:0]
+			//usersAttempts = usersAttempts[:0]
+			users = users[:0]
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Попытка: "+strconv.Itoa(usersAttempt)+". Не угадали: "+answer)
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Попытка: "+strconv.Itoa(u.Attempts)+". Не угадали: "+answer)
 		bot.Send(msg)
 	}
 }

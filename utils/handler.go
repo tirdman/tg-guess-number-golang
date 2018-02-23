@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
+	"github.com/tirdman/tg-guess-number-golang/models"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -70,14 +72,11 @@ func GetAllUserInCurrentQuest(usersAttempts []int) []int {
 	return uniqUser
 }
 
-func GetAttemptsByUser(usersAttempts []int, userId int) int {
-
-	var countAttempts int
-	for _, u := range usersAttempts {
-		if u == userId {
-			countAttempts++
+func GetUser(id int, users []*models.User) (user *models.User, err error) {
+	for _, u := range users {
+		if u.Id == id {
+			return u, nil
 		}
 	}
-
-	return countAttempts
+	return nil, errors.New("User no founded")
 }
