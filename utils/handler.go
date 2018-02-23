@@ -50,27 +50,6 @@ func CheckInputNumber(text string, unknownNumber string) string {
 	return answer
 }
 
-func isContainInt(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
-func GetAllUserInCurrentQuest(usersAttempts []int) []int {
-	var uniqUser []int
-	for _, v := range usersAttempts {
-
-		if !isContainInt(uniqUser, v) {
-			uniqUser = append(uniqUser, v)
-		}
-
-	}
-
-	return uniqUser
-}
 
 func GetUser(id int, users []*models.User) (user *models.User, err error) {
 	for _, u := range users {
